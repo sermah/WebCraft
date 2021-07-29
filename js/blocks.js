@@ -93,10 +93,10 @@ BLOCK.BOOKCASE = {
 	fluid: false,
 	texture: function( world, lightmap, lit, x, y, z, dir )
 	{
-		if ( dir == DIRECTION.FORWARD || dir == DIRECTION.BACK )
-			return [ 3/16, 2/16, 4/16, 3/16 ];
-		else
+		if ( dir == DIRECTION.UP || dir == DIRECTION.DOWN )
 			return [ 4/16, 0/16, 5/16, 1/16 ];
+		else
+			return [ 3/16, 2/16, 4/16, 3/16 ];
 	}
 };
 
