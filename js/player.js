@@ -33,6 +33,7 @@ Player.prototype.setWorld = function( world )
 	this.keys = {};
 	this.buildMaterial = BLOCK.DIRT;
 	this.eventHandlers = {};
+	this.maxSpeed = 4.5;
 }
 
 // setClient( client )
@@ -190,7 +191,7 @@ Player.prototype.update = function()
 
 	if ( this.lastUpdate != null )
 	{
-		var delta = ( new Date().getTime() - this.lastUpdate ) / 1000;
+		var delta = ( new Date().getTime() - this.lastUpdate ) * this.maxSpeed / 4000;
 
 		// View
 		if ( this.dragging )
@@ -222,18 +223,18 @@ Player.prototype.update = function()
 				walkVelocity.y += Math.sin( Math.PI + Math.PI / 2 - this.angles[1] );
 			}
 			if ( this.keys["a"] ) {
-				walkVelocity.x += Math.cos( Math.PI / 2 + Math.PI / 2 - this.angles[1] );
-				walkVelocity.y += Math.sin( Math.PI / 2 + Math.PI / 2 - this.angles[1] );
+				walkVelocity.x += Math.cos( Math.PI - this.angles[1] );
+				walkVelocity.y += Math.sin( Math.PI - this.angles[1] );
 			}
 			if ( this.keys["d"] ) {
-				walkVelocity.x += Math.cos( -Math.PI / 2 + Math.PI / 2 - this.angles[1] );
-				walkVelocity.y += Math.sin( -Math.PI / 2 + Math.PI / 2 - this.angles[1] );
+				walkVelocity.x += Math.cos( - this.angles[1] );
+				walkVelocity.y += Math.sin( - this.angles[1] );
 			}
 		}
 		if ( walkVelocity.length() > 0 ) {
-				walkVelocity = walkVelocity.normal();
-				velocity.x = walkVelocity.x * 4;
-				velocity.y = walkVelocity.y * 4;
+			walkVelocity = walkVelocity.normal();
+			velocity.x = walkVelocity.x * this.maxSpeed;
+			velocity.y = walkVelocity.y * this.maxSpeed;
 		} else {
 			velocity.x /= this.falling ? 1.01 : 1.5;
 			velocity.y /= this.falling ? 1.01 : 1.5;
@@ -241,6 +242,13 @@ Player.prototype.update = function()
 
 		// Resolve collision
 		this.pos = this.resolveCollision( pos, bPos, velocity.mul( delta ) );
+
+		if (this.keys["r"]) {
+			this.pos.x = this.world.spawnPoint.x;
+			this.pos.y = this.world.spawnPoint.y;
+			this.pos.z = this.world.spawnPoint.z;
+			velocity = new Vector( 0, 0, 0 );
+		}
 	}
 
 	this.lastUpdate = new Date().getTime();
