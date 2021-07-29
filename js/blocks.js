@@ -41,7 +41,7 @@ BLOCK.DIRT = {
 	texture: function( world, lightmap, lit, x, y, z, dir )
 	{
 		if ( dir == DIRECTION.UP && lit )
-			return [8 / 16, 2 / 16, 9 / 16, 3 / 16, 0.65, 1.0, 0.45 ];
+			return [8 / 16, 2 / 16, 9 / 16, 3 / 16, 0.85, 1.3, 0.45 ];
 		else if ( dir == DIRECTION.DOWN || !lit ) 
 			return [ 2/16, 0/16, 3/16, 1/16 ];
 		else
@@ -270,23 +270,18 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Top
 	if ( z == world.sz - 1 || world.blocks[x][y][z+1].transparent || block.fluid )
 	{
-		var c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.UP );
+		let c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.UP );
 		
-		var lightMultiplier = (block.selflit || z >= lightmap[x][y]) ? 1.0 : 0.6;
+		let lightMultiplier = (block.selflit || (z >= lightmap[x][y])) ? 1.0 : 0.6;
 
-		var colors = [ lightMultiplier, lightMultiplier, lightMultiplier ]
-		if ( c.length > 4 ) {
-			colors[0] *= c[4]
-			colors[1] *= c[5]
-			colors[2] *= c[6]
-		} 
+		let corners = makeColors(x, y, z, c, DIRECTION.UP, lightMultiplier, world)
 		
 		pushQuad(
 			vertices,
-			[ x, y, z + bH, c[0], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y, z + bH, c[2], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y + 1.0, z + bH, c[2], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y + 1.0, z + bH, c[0], c[3], colors[0], colors[1], colors[2], 1.0 ]
+			[x, y, z + bH, c[0], c[1], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
+			[x + 1.0, y, z + bH, c[2], c[1], corners[1][0], corners[1][1], corners[1][2], 1.0 ],
+			[x + 1.0, y + 1.0, z + bH, c[2], c[3], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x, y + 1.0, z + bH, c[0], c[3], corners[3][0], corners[3][1], corners[3][2], 1.0 ]
 		);
 	}
 	
@@ -297,19 +292,14 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 		
 		var lightMultiplier = block.selflit ? 1.0 : 0.6;
 		
-		var colors = [lightMultiplier, lightMultiplier, lightMultiplier]
-		if (c.length > 4) {
-			colors[0] *= c[4]
-			colors[1] *= c[5]
-			colors[2] *= c[6]
-		}
+		let corners = makeColors(x, y, z, c, DIRECTION.DOWN, lightMultiplier, world)
 
 		pushQuad(
 			vertices,							
-			[ x, y + 1.0, z, c[0], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y + 1.0, z, c[2], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y, z, c[2], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y, z, c[0], c[1], colors[0], colors[1], colors[2], 1.0 ]
+			[x, y + 1.0, z, c[0], c[3], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x + 1.0, y + 1.0, z, c[2], c[3], corners[3][0], corners[3][1], corners[3][2], 1.0 ],
+			[x + 1.0, y, z, c[2], c[1], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
+			[x, y, z, c[0], c[1], corners[1][0], corners[1][1], corners[1][2], 1.0 ]
 		);
 	}
 	
@@ -320,19 +310,14 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 		
 		var lightMultiplier = ( block.selflit || y == 0 || z >= lightmap[x][y-1] ) ? 1.0 : 0.6;
 		
-		var colors = [lightMultiplier, lightMultiplier, lightMultiplier]
-		if (c.length > 4) {
-			colors[0] *= c[4]
-			colors[1] *= c[5]
-			colors[2] *= c[6]
-		}
+		let corners = makeColors(x, y, z, c, DIRECTION.FORWARD, lightMultiplier, world)
 
 		pushQuad(
 			vertices,
-			[ x, y, z, c[0], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y, z, c[2], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y, z + bH, c[2], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y, z + bH, c[0], c[1], colors[0], colors[1], colors[2], 1.0 ]
+			[x, y, z, c[0], c[3], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
+			[x + 1.0, y, z, c[2], c[3], corners[1][0], corners[1][1], corners[1][2], 1.0 ],
+			[x + 1.0, y, z + bH, c[2], c[1], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x, y, z + bH, c[0], c[1], corners[3][0], corners[3][1], corners[3][2], 1.0 ]
 		);
 	}
 	
@@ -343,19 +328,14 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 		
 		var lightMultiplier = block.selflit ? 1.0 : 0.6;
 		
-		var colors = [lightMultiplier, lightMultiplier, lightMultiplier]
-		if (c.length > 4) {
-			colors[0] *= c[4]
-			colors[1] *= c[5]
-			colors[2] *= c[6]
-		}
+		let corners = makeColors(x, y, z, c, DIRECTION.BACK, lightMultiplier, world)
 
 		pushQuad(
 			vertices,
-			[ x, y + 1.0, z + bH, c[2], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y + 1.0, z + bH, c[0], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y + 1.0, z, c[0], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y + 1.0, z, c[2], c[3], colors[0], colors[1], colors[2], 1.0 ]
+			[x, y + 1.0, z + bH, c[2], c[1], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x + 1.0, y + 1.0, z + bH, c[0], c[1], corners[3][0], corners[3][1], corners[3][2], 1.0 ],
+			[x + 1.0, y + 1.0, z, c[0], c[3], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
+			[x, y + 1.0, z, c[2], c[3], corners[1][0], corners[1][1], corners[1][2], 1.0 ]
 		);
 	}
 	
@@ -366,19 +346,14 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 		
 		var lightMultiplier = block.selflit ? 1.0 : 0.6;
 		
-		var colors = [lightMultiplier, lightMultiplier, lightMultiplier]
-		if (c.length > 4) {
-			colors[0] *= c[4]
-			colors[1] *= c[5]
-			colors[2] *= c[6]
-		}
+		let corners = makeColors(x, y, z, c, DIRECTION.LEFT, lightMultiplier, world)
 
 		pushQuad(
 			vertices,
-			[ x, y, z + bH, c[2], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y + 1.0, z + bH, c[0], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y + 1.0, z, c[0], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x, y, z, c[2], c[3], colors[0], colors[1], colors[2], 1.0 ]
+			[x, y, z + bH, c[2], c[1], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x, y + 1.0, z + bH, c[0], c[1], corners[3][0], corners[3][1], corners[3][2], 1.0 ],
+			[x, y + 1.0, z, c[0], c[3], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
+			[x, y, z, c[2], c[3], corners[1][0], corners[1][1], corners[1][2], 1.0 ]
 		);
 	}
 	
@@ -389,19 +364,14 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 		
 		var lightMultiplier = (block.selflit || x == world.sx - 1 || z >= lightmap[x+1][y] ) ? 1.0 : 0.6;
 		
-		var colors = [lightMultiplier, lightMultiplier, lightMultiplier]
-		if (c.length > 4) {
-			colors[0] *= c[4]
-			colors[1] *= c[5]
-			colors[2] *= c[6]
-		}
+		let corners = makeColors(x, y, z, c, DIRECTION.RIGHT, lightMultiplier, world)
 
 		pushQuad(
 			vertices,
-			[ x + 1.0, y, z, c[0], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y + 1.0, z, c[2], c[3], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y + 1.0, z + bH, c[2], c[1], colors[0], colors[1], colors[2], 1.0 ],
-			[ x + 1.0, y, z + bH, c[0], c[1], colors[0], colors[1], colors[2], 1.0 ]
+			[x + 1.0, y, z, c[0], c[3], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
+			[x + 1.0, y + 1.0, z, c[2], c[3], corners[1][0], corners[1][1], corners[1][2], 1.0 ],
+			[x + 1.0, y + 1.0, z + bH, c[2], c[1], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x + 1.0, y, z + bH, c[0], c[1], corners[3][0], corners[3][1], corners[3][2], 1.0 ]
 		);
 	}
 }
@@ -467,6 +437,147 @@ BLOCK.pushPickingVertices = function( vertices, x, y, z )
 		[ x + 1, y + 1, z + 1, 1, 1, color.r, color.g, color.b, 6/255 ],
 		[ x + 1, y, z + 1, 0, 0, color.r, color.g, color.b, 6/255 ]
 	);
+}
+
+function calculateCornerAO( side1, side2, corner ){
+	//  x|| s1
+	// ==`.---
+    // s2 | corner
+	return 3 - (side1 ? 1 : 0) - (side2 ? 1 : 0) - (corner ? 1 : 0)
+}
+
+function calculateSideAO( x, y, z, dir, world ){
+	//        y+ (top/bot)
+	//   x- = 0 1 = x+ (top/bot)
+	// left - 2 3 - right (side)
+	//        y-
+	let s01, s02, s13, s23, // side voxels
+		c0, c1, c2, c3		// corner voxels
+
+	if ( (dir == DIRECTION.UP) || (dir == DIRECTION.DOWN) ) {
+		let ud = (dir == DIRECTION.DOWN) ? -1 : ((dir == DIRECTION.UP) ? 1 : 0);
+		s01 = !world.getBlock(
+			x,
+			y + 1,
+			z + ud
+		).transparent;
+		s23 = !world.getBlock(
+			x,
+			y - 1,
+			z + ud
+		).transparent;
+		s02 = !world.getBlock(
+			x - 1,
+			y,
+			z + ud
+		).transparent;
+		s13 = !world.getBlock(
+			x + 1,
+			y,
+			z + ud
+		).transparent;
+		c0 = !world.getBlock(
+			x - 1,
+			y + 1,
+			z + ud
+		).transparent;
+		c1 = !world.getBlock(
+			x + 1,
+			y + 1,
+			z + ud
+		).transparent;
+		c2 = !world.getBlock(
+			x - 1,
+			y - 1,
+			z + ud
+		).transparent;
+		c3 = !world.getBlock(
+			x + 1,
+			y - 1,
+			z + ud
+		).transparent;
+	} else {
+		let lr = (dir == DIRECTION.LEFT) ? -1 : ((dir == DIRECTION.RIGHT) ? 1 : 0);
+		let bf = (dir == DIRECTION.BACK) ? -1 : ((dir == DIRECTION.FORWARD) ? 1 : 0);
+		s01 = !world.getBlock( 
+			x + lr,
+			y + bf, 
+			z + 1
+		).transparent;
+		s02 = !world.getBlock( 
+			x + lr + bf, 
+			y + bf - lr, 
+			z
+		).transparent;
+		s23 = !world.getBlock( 
+			x + lr, 
+			y + bf,
+			z - 1
+		).transparent;
+		s13 = !world.getBlock( 
+			x + lr - bf, 
+			y + bf + lr, 
+			z
+		).transparent;
+		c0 = !world.getBlock(
+			x + lr + bf,
+			y + bf - lr,
+			z + 1
+		).transparent;
+		c1 = !world.getBlock(
+			x + lr - bf,
+			y + bf + lr,
+			z + 1
+		).transparent;
+		c2 = !world.getBlock(
+			x + lr + bf,
+			y + bf - lr,
+			z - 1
+		).transparent;
+		c3 = !world.getBlock(
+			x + lr - bf,
+			y + bf + lr,
+			z - 1
+		).transparent;
+	}
+
+	// ao   0 1 2 3  -  2 3 1 0
+	// vrtx 3 2 0 1  -  0 1 2 3
+
+	let map = [
+		calculateCornerAO(s02, s23, c2) / 3, // 2
+		calculateCornerAO(s13, s23, c3) / 3, // 3
+		calculateCornerAO(s01, s13, c1) / 3, // 1
+		calculateCornerAO(s01, s02, c0) / 3  // 0
+	];
+	return map;
+}
+
+function makeColors( x, y, z, c, dir, light, world){
+	let aos = calculateSideAO(x, y, z, dir, world)
+
+	let colors = [light, light, light]
+	if (c.length > 4) {
+		colors[0] *= c[4]
+		colors[1] *= c[5]
+		colors[2] *= c[6]
+	}
+
+	let combine = (clr, ao) => [
+		clr[0] * (ao * 0.6 + 0.4),
+		clr[1] * (ao * 0.6 + 0.4),
+		clr[2] * (ao * 0.6 + 0.4)
+	];
+
+
+	let corners = [
+		combine(colors, aos[0]),
+		combine(colors, aos[1]),
+		combine(colors, aos[2]),
+		combine(colors, aos[3])
+	];
+
+	return corners
 }
 
 // Export to node.js
