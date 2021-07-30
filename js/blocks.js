@@ -296,10 +296,10 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 
 		pushQuad(
 			vertices,							
-			[x, y + 1.0, z, c[0], c[3], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
-			[x + 1.0, y + 1.0, z, c[2], c[3], corners[3][0], corners[3][1], corners[3][2], 1.0 ],
-			[x + 1.0, y, z, c[2], c[1], corners[0][0], corners[0][1], corners[0][2], 1.0 ],
-			[x, y, z, c[0], c[1], corners[1][0], corners[1][1], corners[1][2], 1.0 ]
+			[x, y + 1.0, z, c[0], c[3], corners[3][0], corners[3][1], corners[3][2], 1.0 ],
+			[x + 1.0, y + 1.0, z, c[2], c[3], corners[2][0], corners[2][1], corners[2][2], 1.0 ],
+			[x + 1.0, y, z, c[2], c[1], corners[1][0], corners[1][1], corners[1][2], 1.0 ],
+			[x, y, z, c[0], c[1], corners[0][0], corners[0][1], corners[0][2], 1.0 ]
 		);
 	}
 	
@@ -498,7 +498,7 @@ function calculateSideAO( x, y, z, dir, world ){
 		).transparent;
 	} else {
 		let lr = (dir == DIRECTION.LEFT) ? -1 : ((dir == DIRECTION.RIGHT) ? 1 : 0);
-		let bf = (dir == DIRECTION.BACK) ? -1 : ((dir == DIRECTION.FORWARD) ? 1 : 0);
+		let bf = (dir == DIRECTION.BACK) ? 1 : ((dir == DIRECTION.FORWARD) ? -1 : 0); // idk why vice versa, for some reason 
 		s01 = !world.getBlock( 
 			x + lr,
 			y + bf, 
@@ -541,8 +541,8 @@ function calculateSideAO( x, y, z, dir, world ){
 		).transparent;
 	}
 
-	// ao   0 1 2 3  -  2 3 1 0
-	// vrtx 3 2 0 1  -  0 1 2 3
+	// ao   0 1 2 3  -  2 3 1 0 //  3 2 vrtx
+	// vrtx 3 2 0 1  -  0 1 2 3 //  0 1
 
 	let map = [
 		calculateCornerAO(s02, s23, c2) / 3, // 2
