@@ -505,9 +505,9 @@ Renderer.prototype.onBlockChanged = function( x, y, z )
 			chunks[i].dirty = true;
 		else if ( x >= chunks[i].start[0] && x < chunks[i].end[0] && y >= chunks[i].start[1] && y < chunks[i].end[1] && ( z >= chunks[i].end[2] || z == chunks[i].start[2] - 1 ) )
 			chunks[i].dirty = true;
-		else if ( x >= chunks[i].start[0] && x < chunks[i].end[0] && z >= chunks[i].start[2] && z < chunks[i].end[2] && ( y == chunks[i].end[1] || y == chunks[i].start[1] - 1 ) )
+		else if ( x >= chunks[i].start[0] - 1 && x <= chunks[i].end[0] && z >= chunks[i].start[2] && z < chunks[i].end[2] && ( y == chunks[i].end[1] || y == chunks[i].start[1] - 1 ) )
 			chunks[i].dirty = true;
-		else if ( y >= chunks[i].start[1] && y < chunks[i].end[1] && z >= chunks[i].start[2] && z < chunks[i].end[2] && ( x == chunks[i].end[0] || x == chunks[i].start[0] - 1 ) )
+		else if ( y >= chunks[i].start[1] - 1 && y <= chunks[i].end[1] && z >= chunks[i].start[2] && z < chunks[i].end[2] && ( x == chunks[i].end[0] || x == chunks[i].start[0] - 1 ) )
 			chunks[i].dirty = true;
 	}
 }
