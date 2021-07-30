@@ -270,7 +270,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Top
 	if ( z == world.sz - 1 || world.blocks[x][y][z+1].transparent || block.fluid )
 	{
-		let c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.UP );
+		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.UP );
 		
 		let lightMultiplier = (block.selflit || (z >= lightmap[x][y])) ? 1.0 : 0.6;
 
@@ -288,9 +288,9 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Bottom
 	if ( z == 0 || world.blocks[x][y][z-1].transparent )
 	{
-		var c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.DOWN )
+		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.DOWN )
 		
-		var lightMultiplier = block.selflit ? 1.0 : 0.6;
+		let lightMultiplier = block.selflit ? 1.0 : 0.6;
 		
 		let corners = makeColors(x, y, z, c, DIRECTION.DOWN, lightMultiplier, world)
 
@@ -306,9 +306,9 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Front
 	if ( y == 0 || world.blocks[x][y-1][z].transparent )
 	{
-		var c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.FORWARD );
+		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.FORWARD );
 		
-		var lightMultiplier = ( block.selflit || y == 0 || z >= lightmap[x][y-1] ) ? 1.0 : 0.6;
+		let lightMultiplier = ( block.selflit || y == 0 || z >= lightmap[x][y-1] ) ? 1.0 : 0.6;
 		
 		let corners = makeColors(x, y, z, c, DIRECTION.FORWARD, lightMultiplier, world)
 
@@ -324,9 +324,9 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Back
 	if ( y == world.sy - 1 || world.blocks[x][y+1][z].transparent )
 	{
-		var c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.BACK );
+		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.BACK );
 		
-		var lightMultiplier = block.selflit ? 1.0 : 0.6;
+		let lightMultiplier = block.selflit ? 1.0 : 0.6;
 		
 		let corners = makeColors(x, y, z, c, DIRECTION.BACK, lightMultiplier, world)
 
@@ -342,9 +342,9 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Left
 	if ( x == 0 || world.blocks[x-1][y][z].transparent )
 	{
-		var c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.LEFT );
+		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.LEFT );
 		
-		var lightMultiplier = block.selflit ? 1.0 : 0.6;
+		let lightMultiplier = block.selflit ? 1.0 : 0.6;
 		
 		let corners = makeColors(x, y, z, c, DIRECTION.LEFT, lightMultiplier, world)
 
@@ -360,9 +360,9 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	// Right
 	if ( x == world.sx - 1 || world.blocks[x+1][y][z].transparent )
 	{
-		var c = block.texture( world, lightmap, blockLit, x, y, z, DIRECTION.RIGHT );
+		let c = getTexture( block, world, lightmap, blockLit, x, y, z, DIRECTION.RIGHT );
 		
-		var lightMultiplier = (block.selflit || x == world.sx - 1 || z >= lightmap[x+1][y] ) ? 1.0 : 0.6;
+		let lightMultiplier = (block.selflit || x == world.sx - 1 || z >= lightmap[x+1][y] ) ? 1.0 : 0.6;
 		
 		let corners = makeColors(x, y, z, c, DIRECTION.RIGHT, lightMultiplier, world)
 
@@ -578,6 +578,11 @@ function makeColors( x, y, z, c, dir, light, world){
 	];
 
 	return corners
+}
+
+function getTexture( block, world, lightmap, blockLit, x, y, z, dir ){
+	let c = block.texture(world, lightmap, blockLit, x, y, z, dir)
+	return c
 }
 
 // Export to node.js
