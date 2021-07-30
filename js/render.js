@@ -499,7 +499,7 @@ Renderer.prototype.onBlockChanged = function( x, y, z )
 	
 	for ( var i = 0; i < chunks.length; i++ )
 	{
-		// Neighbouring chunks are updated as well if the block is on a chunk border
+		// Neighbouring chunks (sides and corners in xy-plane) are updated as well if the block is on a chunk border
 		// Also, all chunks below the block are updated because of lighting
 		if ( x >= chunks[i].start[0] && x < chunks[i].end[0] && y >= chunks[i].start[1] && y < chunks[i].end[1] && z >= chunks[i].start[2] && z < chunks[i].end[2] )
 			chunks[i].dirty = true;
