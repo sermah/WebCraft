@@ -33,7 +33,8 @@ Player.prototype.setWorld = function( world )
 	this.keys = {};
 	this.buildMaterial = BLOCK.DIRT;
 	this.eventHandlers = {};
-	this.maxSpeed = 4.5;
+	this.groundSpeed = 4.5;
+	this.airSpeed = 0.5;
 }
 
 // setClient( client )
@@ -155,8 +156,7 @@ Player.prototype.onMouseEvent = function( x, y, type, rmb )
 
 Player.prototype.doBlockAction = function( x, y, destroy )
 {
-	var bPos = new Vector( Math.floor( this.pos.x ), Math.floor( this.pos.y ), Math.floor( this.pos.z ) );
-	var block = this.canvas.renderer.pickAt( 4, this.getEyePos(), this.angles, world);
+	var block = this.canvas.renderer.pickAt( 8, this.getEyePos(), this.angles, world);
 	
 	if ( block != false )
 	{
@@ -191,7 +191,7 @@ Player.prototype.update = function()
 
 	if ( this.lastUpdate != null )
 	{
-		var delta = ( new Date().getTime() - this.lastUpdate ) * this.maxSpeed / 4000;
+		var delta = ( new Date().getTime() - this.lastUpdate ) * this.groundSpeed / 4000;
 
 		// View
 		if ( this.dragging )
@@ -211,34 +211,35 @@ Player.prototype.update = function()
 			velocity.z = 8;
 
 		// Walking
-		var walkVelocity = new Vector( 0, 0, 0 );
-		if ( !this.falling )
-		{
-			if ( this.keys["w"] ) {
-				walkVelocity.x += Math.cos( Math.PI / 2 - this.angles[1] );
-				walkVelocity.y += Math.sin( Math.PI / 2 - this.angles[1] );
-			}
-			if ( this.keys["s"] ) {
-				walkVelocity.x += Math.cos( Math.PI + Math.PI / 2 - this.angles[1] );
-				walkVelocity.y += Math.sin( Math.PI + Math.PI / 2 - this.angles[1] );
-			}
-			if ( this.keys["a"] ) {
-				walkVelocity.x += Math.cos( Math.PI - this.angles[1] );
-				walkVelocity.y += Math.sin( Math.PI - this.angles[1] );
-			}
-			if ( this.keys["d"] ) {
-				walkVelocity.x += Math.cos( - this.angles[1] );
-				walkVelocity.y += Math.sin( - this.angles[1] );
-			}
+		var newVelocity = new Vector( 0, 0, 0 );
+		if ( this.keys["w"] ) {
+			newVelocity.x += Math.cos( Math.PI / 2 - this.angles[1] );
+			newVelocity.y += Math.sin( Math.PI / 2 - this.angles[1] );
 		}
-		if ( walkVelocity.length() > 0 ) {
-			walkVelocity = walkVelocity.normal();
-			velocity.x = walkVelocity.x * this.maxSpeed;
-			velocity.y = walkVelocity.y * this.maxSpeed;
-		} else {
+		if ( this.keys["s"] ) {
+			newVelocity.x += Math.cos( Math.PI + Math.PI / 2 - this.angles[1] );
+			newVelocity.y += Math.sin( Math.PI + Math.PI / 2 - this.angles[1] );
+		}
+		if ( this.keys["a"] ) {
+			newVelocity.x += Math.cos( Math.PI - this.angles[1] );
+			newVelocity.y += Math.sin( Math.PI - this.angles[1] );
+		}
+		if ( this.keys["d"] ) {
+			newVelocity.x += Math.cos( - this.angles[1] );
+			newVelocity.y += Math.sin( - this.angles[1] );
+		}
+		if ( newVelocity.length() > 0 ) newVelocity = newVelocity.normal();
+		let mult = this.falling ? this.airSpeed : this.groundSpeed;
+		newVelocity.x *= mult;
+		newVelocity.y *= mult;
+		if (Math.abs(velocity.x) < Math.abs(newVelocity.x))
+			velocity.x = newVelocity.x;
+		else
 			velocity.x /= this.falling ? 1.01 : 1.5;
+		if (Math.abs(velocity.y) < Math.abs(newVelocity.y))
+			velocity.y = newVelocity.y;
+		else
 			velocity.y /= this.falling ? 1.01 : 1.5;
-		}
 
 		// Resolve collision
 		this.pos = this.resolveCollision( pos, bPos, velocity.mul( delta ) );
