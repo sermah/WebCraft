@@ -307,11 +307,12 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 	let mdt = 0;
 	let dist = 0;
 	let last = 0; // 0 - x, 1 - y, 2 - z
+	let mod = (a, b) => (a % b + b) % b;
 	while (Math.abs(dist) <= max){
 		let dt = new Vector(
-			(vDirPos.x - cPos.x % 1.0) / vDir.x, 
-			(vDirPos.y - cPos.y % 1.0) / vDir.y,
-			(vDirPos.z - cPos.z % 1.0) / vDir.z
+			(vDirPos.x - mod(cPos.x, 1)) / vDir.x, 
+			(vDirPos.y - mod(cPos.y, 1)) / vDir.y,
+			(vDirPos.z - mod(cPos.z, 1)) / vDir.z
 		);
 		if (vDir.x != 0 && dt.x == 0) dt.x = 1;
 		if (vDir.y != 0 && dt.y == 0) dt.y = 1;
@@ -330,6 +331,17 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 			return false;
 		}
 		cPos = cPos.add(vDir.mul(mdt));
+		switch(last) {
+			case 0:
+				cPos.x = Math.round(cPos.x);
+				break;
+			case 1:
+				cPos.y = Math.round(cPos.y)
+				break;
+			case 2:
+				cPos.z = Math.round(cPos.z)
+				break;
+		}
 		let bPos = new Vector(
 			Math.floor(cPos.x) - (last == 0 && vDirPos.x == 0 ? 1 : 0),
 			Math.floor(cPos.y) - (last == 1 && vDirPos.y == 0 ? 1 : 0),
