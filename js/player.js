@@ -156,7 +156,7 @@ Player.prototype.onMouseEvent = function( x, y, type, rmb )
 Player.prototype.doBlockAction = function( x, y, destroy )
 {
 	var bPos = new Vector( Math.floor( this.pos.x ), Math.floor( this.pos.y ), Math.floor( this.pos.z ) );
-	var block = this.canvas.renderer.pickAt( new Vector( bPos.x - 4, bPos.y - 4, bPos.z - 4 ), new Vector( bPos.x + 4, bPos.y + 4, bPos.z + 4 ), x, y );
+	var block = this.canvas.renderer.pickAt( 4, this.getEyePos(), this.angles, world);
 	
 	if ( block != false )
 	{
