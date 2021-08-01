@@ -443,7 +443,7 @@ function calculateCornerAO( side1, side2, corner ){
 	//  x|| s1
 	// ==`.---
     // s2 | corner
-	return 3 - (side1 ? 1 : 0) - (side2 ? 1 : 0) - (corner ? 1 : 0)
+	return 3 - (side1 ? 1 : 0) - (side2 ? 1 : 0) - (corner || side1 && side2 ? 1 : 0)
 }
 
 function calculateSideAO( x, y, z, dir, world ){
