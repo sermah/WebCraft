@@ -295,63 +295,40 @@ Renderer.prototype.buildPlayerName = function( nickname )
 
 Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 	let cPos = new Vector(pPos.x, pPos.y, pPos.z);
-	let vDir = new Vector(Math.sin(pAng[1]) * Math.cos(pAng[0]), Math.cos(pAng[1]) * Math.cos(pAng[0]), Math.sin(pAng[0]));
+	let vDir = new Vector(
+		Math.sin(pAng[1]) * Math.abs(Math.cos(pAng[0])), 
+		Math.cos(pAng[1]) * Math.abs(Math.cos(pAng[0])), 
+		Math.sin(pAng[0]));
 	console.log(vDir);
 	let vDirSign = new Vector(Math.sign(vDir.x), Math.sign(vDir.y), Math.sign(vDir.z))
-	let vDirPos  = new Vector(
-		vDirSign.x != -1 ? 1 : 0,
-		vDirSign.y != -1 ? 1 : 0,
-		vDirSign.z != -1 ? 1 : 0
+	let tDt = new Vector(
+		Math.abs(1 / vDir.x),
+		Math.abs(1 / vDir.y),
+		Math.abs(1 / vDir.z),
 	)
-	console.log(vDirPos, vDirSign)
-	let mdt = 0;
-	let dist = 0;
-	let last = 0; // 0 - x, 1 - y, 2 - z
-	let mod = (a, b) => (a % b + b) % b;
-	while (Math.abs(dist) <= max){
-		let dt = new Vector(
-			(vDirPos.x - mod(cPos.x, 1)) / vDir.x, 
-			(vDirPos.y - mod(cPos.y, 1)) / vDir.y,
-			(vDirPos.z - mod(cPos.z, 1)) / vDir.z
-		);
-		if (vDir.x != 0 && dt.x == 0) dt.x = 1;
-		if (vDir.y != 0 && dt.y == 0) dt.y = 1;
-		if (vDir.z != 0 && dt.z == 0) dt.z = 1;
-		if (dt.x < dt.y && dt.x < dt.z){
-			mdt = dt.x;
-			last = 0;
-		} else if (dt.y < dt.z) {
-			mdt = dt.y;
-			last = 1;
-		} else if (dt.z != 0) {
-			mdt = dt.z;
-			last = 2;
-		} else {
-			console.log(vDir, dt);
-			return false;
-		}
-		cPos = cPos.add(vDir.mul(mdt));
-		switch(last) {
-			case 0:
-				cPos.x = Math.round(cPos.x);
-				break;
-			case 1:
-				cPos.y = Math.round(cPos.y)
-				break;
-			case 2:
-				cPos.z = Math.round(cPos.z)
-				break;
-		}
-		let bPos = new Vector(
-			Math.floor(cPos.x) - (last == 0 && vDirPos.x == 0 ? 1 : 0),
-			Math.floor(cPos.y) - (last == 1 && vDirPos.y == 0 ? 1 : 0),
-			Math.floor(cPos.z) - (last == 2 && vDirPos.z == 0 ? 1 : 0)
-		);
-		dist = pPos.distance(cPos);
+	let tDir = new Vector(
+		cPos.x % 1,
+		cPos.y % 1,
+		cPos.z % 1,
+	)
+	tDir = new Vector(
+		(vDirSign.x >= 0 ? 1 - tDir.x : tDir.x) * tDt.x,
+		(vDirSign.y >= 0 ? 1 - tDir.y : tDir.y) * tDt.y,
+		(vDirSign.z >= 0 ? 1 - tDir.z : tDir.z) * tDt.z,
+	)
+	let bPos = new Vector(
+		Math.floor(cPos.x),
+		Math.floor(cPos.y),
+		Math.floor(cPos.z),
+	)
+	console.log(tDir, tDt, vDirSign)
+	let dist = 0
+	let last = 0 // 0 - x, 1 - y, 2 - z
+	while (dist <= max){
 		let block = world.getBlock(bPos.x, bPos.y, bPos.z)
-		console.log({ cPos, pPos, d: dist, t: mdt, b: block, bPos});
+		//console.log({ cPos, pPos, d: dist, t: mdt, b: block, bPos });
 		if (block.id != 0) {
-			let normal = new Vector( 0, 0, 0 );
+			let normal = new Vector(0, 0, 0);
 			console.log(block.id);
 			switch (last) {
 				case 0:
@@ -370,6 +347,26 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 				z: bPos.z,
 				n: normal
 			};
+		}
+
+		if (tDir.x < tDir.y && tDir.x < tDir.z){
+			bPos.x += vDirSign.x
+			dist = tDir.x
+			tDir.x += tDt.x
+			last = 0
+		} else if (tDir.y < tDir.z) {
+			bPos.y += vDirSign.y
+			dist = tDir.y
+			tDir.y += tDt.y
+			last = 1
+		} else if (tDir.z != 0) {
+			bPos.z += vDirSign.z
+			dist = tDir.z
+			tDir.z += tDt.z
+			last = 2
+		} else {
+			console.log(vDir, dt);
+			return false;
 		}
 	}
 	return false;
