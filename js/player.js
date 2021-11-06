@@ -250,6 +250,10 @@ Player.prototype.update = function()
 			this.pos.z = this.world.spawnPoint.z;
 			velocity = new Vector( 0, 0, 0 );
 		}
+
+		if (this.keys["p"]) {
+			console.log(this.pos)
+		}
 	}
 
 	this.lastUpdate = new Date().getTime();

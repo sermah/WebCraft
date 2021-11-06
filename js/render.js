@@ -299,7 +299,7 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 		Math.sin(pAng[1]) * Math.abs(Math.cos(pAng[0])), 
 		Math.cos(pAng[1]) * Math.abs(Math.cos(pAng[0])), 
 		Math.sin(pAng[0]));
-	console.log(vDir);
+	//console.log(vDir);
 	let vDirSign = new Vector(Math.sign(vDir.x), Math.sign(vDir.y), Math.sign(vDir.z))
 	let tDt = new Vector(
 		Math.abs(1 / vDir.x),
@@ -321,7 +321,7 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 		Math.floor(cPos.y),
 		Math.floor(cPos.z),
 	)
-	console.log(tDir, tDt, vDirSign)
+	//console.log(tDir, tDt, vDirSign)
 	let dist = 0
 	let last = 0 // 0 - x, 1 - y, 2 - z
 	while (dist <= max){
@@ -329,7 +329,7 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 		//console.log({ cPos, pPos, d: dist, t: mdt, b: block, bPos });
 		if (block.id != 0) {
 			let normal = new Vector(0, 0, 0);
-			console.log(block.id);
+			//console.log(block.id);
 			switch (last) {
 				case 0:
 					normal.x = -vDirSign.x;
@@ -365,7 +365,7 @@ Renderer.prototype.pickAt = function( max, pPos, pAng, world ){
 			tDir.z += tDt.z
 			last = 2
 		} else {
-			console.log(vDir, dt);
+			//console.log(vDir, dt);
 			return false;
 		}
 	}

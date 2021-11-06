@@ -268,7 +268,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	var bH = block.fluid && ( z == world.sz - 1 || !blocks[x][y][z+1].fluid ) ? 0.9 : 1.0;
 	
 	// Top
-	if ( z == world.sz - 1 || world.blocks[x][y][z+1].transparent || block.fluid )
+	if (z == world.sz - 1 || (world.blocks[x][y][z+1].transparent && (world.blocks[x][y][z+1] != block)) || block.fluid )
 	{
 		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.UP );
 		
@@ -286,7 +286,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	}
 	
 	// Bottom
-	if ( z == 0 || world.blocks[x][y][z-1].transparent )
+	if (z == 0 || (world.blocks[x][y][z - 1].transparent && (world.blocks[x][y][z - 1] != block)) )
 	{
 		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.DOWN )
 		
@@ -304,7 +304,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	}
 	
 	// Front
-	if ( y == 0 || world.blocks[x][y-1][z].transparent )
+	if (y == 0 || (world.blocks[x][y-1][z].transparent && (world.blocks[x][y-1][z] != block)) )
 	{
 		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.FORWARD );
 		
@@ -322,7 +322,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	}
 	
 	// Back
-	if ( y == world.sy - 1 || world.blocks[x][y+1][z].transparent )
+	if (y == world.sy - 1 || (world.blocks[x][y+1][z].transparent && (world.blocks[x][y+1][z] != block)) )
 	{
 		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.BACK );
 		
@@ -340,7 +340,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	}
 	
 	// Left
-	if ( x == 0 || world.blocks[x-1][y][z].transparent )
+	if (x == 0 || (world.blocks[x-1][y][z].transparent && (world.blocks[x-1][y][z] != block)) )
 	{
 		let c = getTexture(block, world, lightmap, blockLit, x, y, z, DIRECTION.LEFT );
 		
@@ -358,7 +358,7 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	}
 	
 	// Right
-	if ( x == world.sx - 1 || world.blocks[x+1][y][z].transparent )
+	if (x == world.sx - 1 || (world.blocks[x+1][y][z].transparent && (world.blocks[x+1][y][z] != block)) )
 	{
 		let c = getTexture( block, world, lightmap, blockLit, x, y, z, DIRECTION.RIGHT );
 		
