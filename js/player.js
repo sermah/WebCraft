@@ -34,12 +34,16 @@ Player.prototype.setWorld = function( world )
 	this.buildMaterial = BLOCK.DIRT;
 	this.eventHandlers = {};
 
-	this.maxSpeed = 4.5;
+	this.walkSpeed = 5;
+	this.runSpeed = 8;
+	this.crouchSpeed = 2;
+	this.maxSpeed = this.walkSpeed|0;
+	this.maxFallSpeed = 64;
 	this.maxAirSpeedForAcc = 1;
 	this.jumpSpeed = 8.2;
 	// acceleration values (m/s^2)
 	this.groundAcc = 12.5;
-	this.airAcc = 1.5;
+	this.airAcc = 0.5;
 	this.gravity = -0.5;
 	// deceleration multipliers
 	this.groundDecMul = 0.6;
@@ -216,8 +220,10 @@ Player.prototype.update = function()
 		}
 
 		// Gravity
-		if ( this.falling )
+		if (this.falling && velocity.z > -this.maxFallSpeed ){
 			velocity.z += this.gravity;
+			if (velocity.z <= -this.maxFallSpeed) velocity.z = -this.maxFallSpeed
+		}
 
 		// Jumping
 		if ( this.keys[" "] && !this.falling )
@@ -241,6 +247,29 @@ Player.prototype.update = function()
 			moveDir.x += Math.cos( - this.angles[1] );
 			moveDir.y += Math.sin( - this.angles[1] );
 		}
+		if (this.keys["d"]) {
+			moveDir.x += Math.cos(- this.angles[1]);
+			moveDir.y += Math.sin(- this.angles[1]);
+		}
+
+		if (this.keys[16]) {
+			this.maxSpeed = this.crouchSpeed;
+		} else if (this.keys["c"]) {
+			this.maxSpeed = this.runSpeed;
+		} else {
+			this.maxSpeed = this.walkSpeed;
+		}
+
+		let speedBeforeChangePow2 = velocity.x * velocity.x + velocity.y * velocity.y
+		let maxBeforeChange = speedBeforeChangePow2 > this.maxSpeed * this.maxSpeed
+		if (moveDir.isZero() || maxBeforeChange) {
+			let decc = this.falling ? this.airDecMul : this.groundDecMul;
+			velocity.x *= decc;
+			velocity.y *= decc;
+			if (Math.abs(velocity.x) < 0.01) velocity.x = 0;
+			if (Math.abs(velocity.y) < 0.01) velocity.y = 0;
+		}
+		speedBeforeChangePow2 = velocity.x * velocity.x + velocity.y * velocity.y
 		if (!moveDir.isZero()) {
 			moveDir = moveDir.normal();
 			let acc = (this.falling ? this.airAcc : this.groundAcc);
@@ -253,23 +282,17 @@ Player.prototype.update = function()
 			velocity.x = xyVel.x;
 			velocity.y = xyVel.y;
 			// cap speed overall
-			if(velocity.x*velocity.x + velocity.y*velocity.y > this.maxSpeed * this.maxSpeed) {
-				let maxVel = velocity.normal().mul(this.maxSpeed);
+			let curMaxSpeed = Math.max(this.maxSpeed * this.maxSpeed,  speedBeforeChangePow2)
+			if(velocity.x*velocity.x + velocity.y * velocity.y > curMaxSpeed) {
+				let maxVel = velocity.normal().mul(Math.sqrt(curMaxSpeed));
 				velocity.x = maxVel.x;
 				velocity.y = maxVel.y;
 			}
 		}
-		else {
-			let decc = this.falling ? this.airDecMul : this.groundDecMul;
-			velocity.x *= decc;
-			velocity.y *= decc;
-			if (Math.abs(velocity.x) < 0.01) velocity.x = 0;
-			if (Math.abs(velocity.y) < 0.01) velocity.y = 0;
-		}
 		
 		// Resolve collision
 		this.pos = this.resolveCollision( pos, bPos, velocity.mul( delta ) );
-		this.velocity = velocity
+		this.velocity = velocity;
 
 		if (this.keys["r"]) {
 			this.pos.x = this.world.spawnPoint.x;
