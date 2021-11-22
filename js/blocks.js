@@ -379,69 +379,6 @@ BLOCK.pushVertices = function( vertices, world, lightmap, x, y, z )
 	}
 }
 
-// pushPickingVertices( vertices, x, y, z )
-//
-// Pushes vertices with the data needed for picking.
-
-BLOCK.pushPickingVertices = function( vertices, x, y, z )
-{
-	var color = { r: x/255, g: y/255, b: z/255 };
-	
-	// Top
-	pushQuad(
-		vertices,
-		[ x, y, z + 1, 0, 0, color.r, color.g, color.b, 1/255 ],
-		[ x + 1, y, z + 1, 1, 0, color.r, color.g, color.b, 1/255 ],
-		[ x + 1, y + 1, z + 1, 1, 1, color.r, color.g, color.b, 1/255 ],
-		[ x, y + 1, z + 1, 0, 0, color.r, color.g, color.b, 1/255 ]
-	);
-	
-	// Bottom
-	pushQuad(
-		vertices,
-		[ x, y + 1, z, 0, 0, color.r, color.g, color.b, 2/255 ],
-		[ x + 1, y + 1, z, 1, 0, color.r, color.g, color.b, 2/255 ],
-		[ x + 1, y, z, 1, 1, color.r, color.g, color.b, 2/255 ],
-		[ x, y, z, 0, 0, color.r, color.g, color.b, 2/255 ]
-	);
-	
-	// Front
-	pushQuad(
-		vertices,
-		[ x, y, z, 0, 0, color.r, color.g, color.b, 3/255 ],
-		[ x + 1, y, z, 1, 0, color.r, color.g, color.b, 3/255 ],
-		[ x + 1, y, z + 1, 1, 1, color.r, color.g, color.b, 3/255 ],
-		[ x, y, z + 1, 0, 0, color.r, color.g, color.b, 3/255 ]
-	);
-	
-	// Back
-	pushQuad(
-		vertices,
-		[ x, y + 1, z + 1, 0, 0, color.r, color.g, color.b, 4/255 ],
-		[ x + 1, y + 1, z + 1, 1, 0, color.r, color.g, color.b, 4/255 ],
-		[ x + 1, y + 1, z, 1, 1, color.r, color.g, color.b, 4/255 ],
-		[ x, y + 1, z, 0, 0, color.r, color.g, color.b, 4/255 ]
-	);
-	
-	// Left
-	pushQuad(
-		vertices,
-		[ x, y, z + 1, 0, 0, color.r, color.g, color.b, 5/255 ],
-		[ x, y + 1, z + 1, 1, 0, color.r, color.g, color.b, 5/255 ],
-		[ x, y + 1, z, 1, 1, color.r, color.g, color.b, 5/255 ],
-		[ x, y, z, 0, 0, color.r, color.g, color.b, 5/255 ]
-	);
-	
-	// Right
-	pushQuad(
-		vertices,
-		[ x + 1, y, z, 0, 0, color.r, color.g, color.b, 6/255 ],
-		[ x + 1, y + 1, z, 1, 0, color.r, color.g, color.b, 6/255 ],
-		[ x + 1, y + 1, z + 1, 1, 1, color.r, color.g, color.b, 6/255 ],
-		[ x + 1, y, z + 1, 0, 0, color.r, color.g, color.b, 6/255 ]
-	);
-}
-
 function calculateCornerAO( side1, side2, corner ){
 	//  x|| s1
 	// ==`.---
