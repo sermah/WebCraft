@@ -169,7 +169,7 @@ Player.prototype.onMouseEvent = function( x, y, type, rmb )
 
 Player.prototype.doBlockAction = function( x, y, destroy, noAction )
 {
-	var block = this.canvas.renderer.pickAt( 8, this.getEyePos(), this.angles, world);
+	var block = world.pickAt( 8, this.getEyePos(), this.angles);
 	
 	if ( block != false )
 	{
