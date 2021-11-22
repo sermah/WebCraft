@@ -1,20 +1,14 @@
-WebCraft (HTML5 Minecraft)
----------------------
-[![GitHub issues](https://img.shields.io/github/issues/Overv/WebCraft.svg)](https://github.com/Overv/WebCraft/issues)
-[![GitHub forks](https://img.shields.io/github/forks/Overv/WebCraft.svg)](https://github.com/Overv/WebCraft/network)
-[![GitHub stars](https://img.shields.io/github/stars/Overv/WebCraft.svg)](https://github.com/Overv/WebCraft/stargazers)
-[![GitHub license](https://img.shields.io/github/license/Overv/WebCraft.svg)](https://github.com/Overv/WebCraft/blob/master/LICENSE)
-[![Maintainability](https://api.codeclimate.com/v1/badges/ce6335d88c8072a3f1d3/maintainability)](https://codeclimate.com/github/WarenGonzaga/WebCraft/maintainability)
-
-**This project is no longer actively maintained!**
-
-This project is intended to become a Minecraft Classic clone using HTML 5 technologies, most notably WebGL and WebSockets. No third-party libraries are used, with the exception of glmatrix and socket.io. People who have written similar demos used libraries such as *three.js*, but it is
-both foolish and inefficient to use a 3D engine for rendering large amount of blocks.
-
-Screenshots
+Sermah's WebCraft 
 ---------------------
 
-<a href="http://i.imgur.com/tDzki.png">![Singleplayer structure](http://i.imgur.com/2qBGy.png)</a>
+I adopted this project as its original author has abandoned it.
+
+This project was intended to become a Minecraft Classic clone using HTML 5 technologies, WebGL and WebSockets. Tech stack is the same, but *I'm* going to make it more like modern Minecraft, rather than Classic.
+
+
+> No third-party libraries are used, with the exception ofglmatrix and socket.io. People who have written similar demos used libraries such as *three.js*, but it is both foolish and inefficient to use a 3D engine for rendering large amount of blocks.
+> -- <cite>Overv - original author</cite>
+
 
 Structure
 ---------------------
@@ -45,7 +39,7 @@ This module has strong roots in the world class and simulates the flow of fluid 
 
 **Render.js**
 
-This is the module that takes care of visualizing the block structure in the world class. When a world is assigned to it, it sets up a structure of chunks that are updated when a block changes. These chunks are mostly just fancy Vertex Buffer Objects. As this module takes care of the rendering, it also houses the code that deals with *picking* (getting a block from an x, y position on the screen).
+This is the module that takes care of visualizing the block structure in the world class. When a world is assigned to it, it sets up a structure of chunks that are updated when a block changes. These chunks are mostly just fancy Vertex Buffer Objects.
 
 **Player.js**
 
@@ -60,7 +54,7 @@ Typical game set-up
 
 First a new world is created and the block structure is initialised.
 
-	var world = new World( 16, 16, 16 );
+	var world = new World( 64, 64, 64 );
 	world.createFlatWorld( 6 );
 
 The *6* in *createFlatWorld* here is the line between the ground and the first air layer.
