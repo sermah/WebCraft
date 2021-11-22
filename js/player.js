@@ -33,8 +33,17 @@ Player.prototype.setWorld = function( world )
 	this.keys = {};
 	this.buildMaterial = BLOCK.DIRT;
 	this.eventHandlers = {};
-	this.groundSpeed = 4.5;
-	this.airSpeed = 0.5;
+
+	this.maxSpeed = 4.5;
+	this.maxAirSpeedForAcc = 1;
+	this.jumpSpeed = 8.2;
+	// acceleration values (m/s^2)
+	this.groundAcc = 12.5;
+	this.airAcc = 1.5;
+	this.gravity = -0.5;
+	// deceleration multipliers
+	this.groundDecMul = 0.6;
+	this.airDecMul = 0.96;
 }
 
 // setClient( client )
@@ -136,7 +145,7 @@ Player.prototype.onMouseEvent = function( x, y, type, rmb )
 		this.pitchStart = this.targetPitch = this.angles[0];
 	} else if ( type == MOUSE.UP ) {
 		if ( Math.abs( this.dragStart.x - x ) + Math.abs( this.dragStart.y - y ) < 4 )	
-			this.doBlockAction( x, y, !rmb );
+			this.doBlockAction(x, y, !rmb, this.keys[16] ); // 16 == Shift key
 
 		this.dragging = false;
 		this.mouseDown = false;
@@ -154,7 +163,7 @@ Player.prototype.onMouseEvent = function( x, y, type, rmb )
 //
 // Called to perform an action based on the player's block selection and input.
 
-Player.prototype.doBlockAction = function( x, y, destroy )
+Player.prototype.doBlockAction = function( x, y, destroy, noAction )
 {
 	var block = this.canvas.renderer.pickAt( 8, this.getEyePos(), this.angles, world);
 	
@@ -164,8 +173,11 @@ Player.prototype.doBlockAction = function( x, y, destroy )
 		
 		if ( destroy )
 			obj.setBlock( block.x, block.y, block.z, BLOCK.AIR );
-		else
+		else if (noAction || obj.getBlock(block.x, block.y, block.z).action == null)
 			obj.setBlock( block.x + block.n.x, block.y + block.n.y, block.z + block.n.z, this.buildMaterial );
+		else {
+			obj.getBlock(block.x, block.y, block.z).action(obj, block, this)
+		}
 	}
 }
 
@@ -187,11 +199,12 @@ Player.prototype.update = function()
 	var world = this.world;
 	var velocity = this.velocity;
 	var pos = this.pos;
+	if (pos.z < -64) pos.z = 128;
 	var bPos = new Vector( Math.floor( pos.x ), Math.floor( pos.y ), Math.floor( pos.z ) );
 
 	if ( this.lastUpdate != null )
 	{
-		var delta = ( new Date().getTime() - this.lastUpdate ) * this.groundSpeed / 4000;
+		var delta = ( new Date().getTime() - this.lastUpdate ) / 1000;
 
 		// View
 		if ( this.dragging )
@@ -204,51 +217,65 @@ Player.prototype.update = function()
 
 		// Gravity
 		if ( this.falling )
-			velocity.z += -0.5;
+			velocity.z += this.gravity;
 
 		// Jumping
 		if ( this.keys[" "] && !this.falling )
-			velocity.z = 8;
+			velocity.z = this.jumpSpeed;
 
 		// Walking
-		var newVelocity = new Vector( 0, 0, 0 );
+		var moveDir = new Vector( 0, 0, 0 );
 		if ( this.keys["w"] ) {
-			newVelocity.x += Math.cos( Math.PI / 2 - this.angles[1] );
-			newVelocity.y += Math.sin( Math.PI / 2 - this.angles[1] );
+			moveDir.x += Math.cos( Math.PI / 2 - this.angles[1] );
+			moveDir.y += Math.sin( Math.PI / 2 - this.angles[1] );
 		}
 		if ( this.keys["s"] ) {
-			newVelocity.x += Math.cos( Math.PI + Math.PI / 2 - this.angles[1] );
-			newVelocity.y += Math.sin( Math.PI + Math.PI / 2 - this.angles[1] );
+			moveDir.x += Math.cos( Math.PI + Math.PI / 2 - this.angles[1] );
+			moveDir.y += Math.sin( Math.PI + Math.PI / 2 - this.angles[1] );
 		}
 		if ( this.keys["a"] ) {
-			newVelocity.x += Math.cos( Math.PI - this.angles[1] );
-			newVelocity.y += Math.sin( Math.PI - this.angles[1] );
+			moveDir.x += Math.cos( Math.PI - this.angles[1] );
+			moveDir.y += Math.sin( Math.PI - this.angles[1] );
 		}
 		if ( this.keys["d"] ) {
-			newVelocity.x += Math.cos( - this.angles[1] );
-			newVelocity.y += Math.sin( - this.angles[1] );
+			moveDir.x += Math.cos( - this.angles[1] );
+			moveDir.y += Math.sin( - this.angles[1] );
 		}
-		if ( newVelocity.length() > 0 ) newVelocity = newVelocity.normal();
-		let mult = this.falling ? this.airSpeed : this.groundSpeed;
-		newVelocity.x *= mult;
-		newVelocity.y *= mult;
-		if (Math.abs(velocity.x) < Math.abs(newVelocity.x))
-			velocity.x = newVelocity.x;
-		else
-			velocity.x /= this.falling ? 1.01 : 1.5;
-		if (Math.abs(velocity.y) < Math.abs(newVelocity.y))
-			velocity.y = newVelocity.y;
-		else
-			velocity.y /= this.falling ? 1.01 : 1.5;
-
+		if (!moveDir.isZero()) {
+			moveDir = moveDir.normal();
+			let acc = (this.falling ? this.airAcc : this.groundAcc);
+			//project velocity to moveDir
+			let vproj = velocity.dot(moveDir);
+			// on ground turn instantly, in air turn like force is applied
+			xyVel = this.falling ? velocity.add(moveDir.mul(acc)) : moveDir.mul(vproj+acc);
+			// cap acceleration speed in midair
+			if (this.falling && (xyVel >= this.maxAirSpeedForAcc)) xyVel = xyVel.normal().mul(velocity.length());
+			velocity.x = xyVel.x;
+			velocity.y = xyVel.y;
+			// cap speed overall
+			if(velocity.x*velocity.x + velocity.y*velocity.y > this.maxSpeed * this.maxSpeed) {
+				let maxVel = velocity.normal().mul(this.maxSpeed);
+				velocity.x = maxVel.x;
+				velocity.y = maxVel.y;
+			}
+		}
+		else {
+			let decc = this.falling ? this.airDecMul : this.groundDecMul;
+			velocity.x *= decc;
+			velocity.y *= decc;
+			if (Math.abs(velocity.x) < 0.01) velocity.x = 0;
+			if (Math.abs(velocity.y) < 0.01) velocity.y = 0;
+		}
+		
 		// Resolve collision
 		this.pos = this.resolveCollision( pos, bPos, velocity.mul( delta ) );
+		this.velocity = velocity
 
 		if (this.keys["r"]) {
 			this.pos.x = this.world.spawnPoint.x;
 			this.pos.y = this.world.spawnPoint.y;
 			this.pos.z = this.world.spawnPoint.z;
-			velocity = new Vector( 0, 0, 0 );
+			this.velocity = new Vector( 0, 0, 0 );
 		}
 
 		if (this.keys["p"]) {
@@ -297,9 +324,11 @@ Player.prototype.resolveCollision = function( pos, bPos, velocity )
 		{
 			if ( side.x != null && velocity.x * side.dir < 0 ) {
 				pos.x = side.x + playerRect.size / 2 * ( velocity.x > 0 ? -1 : 1 );
+				this.velocity.x = 0;
 				velocity.x = 0;
 			} else if ( side.y != null && velocity.y * side.dir < 0 ) {
 				pos.y = side.y + playerRect.size / 2 * ( velocity.y > 0 ? -1 : 1 );
+				this.velocity.y = 0;
 				velocity.y = 0;
 			}
 		}
@@ -329,9 +358,9 @@ Player.prototype.resolveCollision = function( pos, bPos, velocity )
 	{
 		var face = collisionCandidates[i];
 
-		if ( rectRectCollide( face, playerFace ) && velocity.z * face.dir < 0 )
+		if ( rectRectCollide( face, playerFace ) && velocity.z * face.dir <= 0 )
 		{
-			if ( velocity.z < 0 ) {
+			if ( velocity.z <= 0 ) {
 				this.falling = false;
 				pos.z = face.z;
 				velocity.z = 0;

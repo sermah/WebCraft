@@ -62,6 +62,11 @@ Vector.prototype.toString = function()
 	return "( " + this.x + ", " + this.y + ", " + this.z + " )";
 }
 
+Vector.prototype.isZero = function()
+{
+	return (this.x == 0) && (this.y == 0) && (this.z == 0)
+}
+
 // lineRectCollide( line, rect )
 //
 // Checks if an axis-aligned line and a bounding box overlap.

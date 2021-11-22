@@ -74,6 +74,9 @@ BLOCK.TNT = {
 	selflit: false,
 	gravity: false,
 	fluid: false,
+	action: function( world, pos, player ) {
+		world.setBlock(pos.x, pos.y, pos.z, BLOCK.SAND)
+	},
 	texture: function( world, lightmap, lit, x, y, z, dir )
 	{
 		if ( dir == DIRECTION.UP || dir == DIRECTION.DOWN )
