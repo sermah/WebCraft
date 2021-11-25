@@ -33,13 +33,13 @@
 		<!-- Initialisation code -->
 		<script type="text/javascript">			
 			// Create a new flat world
-			var world = new World( 64, 64, 64 );
-			world.createFlatWorld( 6 );
+			var world = new World( 256, 256, 64 );
+			world.createRandomWorld( 3 );
 			
 			// Set up renderer
 			var render = new Renderer( "renderSurface" );
 			render.setWorld( world, 8 );
-			render.setPerspective( 75, 0.01, 200 );
+			render.setPerspective( 75, 0.01, 96 );
 			
 			// Create physics simulator
 			var physics = new Physics();
@@ -51,25 +51,31 @@
 			player.setInputCanvas( "renderSurface" );
 			player.setMaterialSelector( "materialSelector" );
 			
+			var time = new Date().getTime() / 1000.0;
 			// Render loop			
 			setInterval( function()
 			{
-				var time = new Date().getTime() / 1000.0;
+				var newTime = new Date().getTime() / 1000.0;
+				var deltaTime = newTime - time;
+				time = newTime;
 				
 				// Simulate physics
-				physics.simulate();
+				physics.simulate(time, deltaTime);
 				
 				// Update local player
-				player.update();
+				player.update(time, deltaTime);
+				
+				// Draw world
+				render.setCamera(player.getEyePos().toArray(), player.angles);
 				
 				// Build a chunk
 				render.buildChunks( 1 );
 				
-				// Draw world
-				render.setCamera( player.getEyePos().toArray(), player.angles );
 				render.draw();
-				
-				while ( new Date().getTime() / 1000 - time < 0.016 );
+			}, 1 );
+			setInterval( function()
+			{
+				render.buildChunks( 8 );
 			}, 1 );
 		</script>
 	</body>

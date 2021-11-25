@@ -49,6 +49,16 @@ World.prototype.createFlatWorld = function( height )
 				this.blocks[x][y][z] = z < height ? BLOCK.DIRT : BLOCK.AIR;
 }
 
+World.prototype.createRandomWorld = function( seed )
+{
+	for ( var x = 0; x < this.sx; x++ )
+		for ( var y = 0; y < this.sy; y++ )
+			for ( var z = 0; z < this.sz; z++ )
+				this.blocks[x][y][z] = z < seed * seed * 0.01 * x + seed * 0.1 * y ? BLOCK.DIRT : BLOCK.AIR
+
+	this.spawnPoint = new Vector(this.sx / 2 + 0.5, this.sy / 2 + 0.5, 64);
+}
+
 // createFromString( str )
 //
 // Creates a world from a string representation.

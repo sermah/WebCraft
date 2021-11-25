@@ -40,11 +40,11 @@ Player.prototype.setWorld = function( world )
 	this.maxSpeed = this.walkSpeed|0;
 	this.maxFallSpeed = 64;
 	this.maxAirSpeedForAcc = 1;
-	this.jumpSpeed = 8.2;
+	this.jumpSpeed = 9;
 	// acceleration values (m/s^2)
 	this.groundAcc = 12.5;
 	this.airAcc = 0.5;
-	this.gravity = -0.5;
+	this.gravity = -0.36;
 	// deceleration multipliers
 	this.groundDecMul = 0.6;
 	this.airDecMul = 0.96;
@@ -198,30 +198,28 @@ Player.prototype.getEyePos = function()
 //
 // Updates this local player (gravity, movement)
 
-Player.prototype.update = function()
+Player.prototype.update = function(time, deltaTime)
 {
 	var world = this.world;
 	var velocity = this.velocity;
 	var pos = this.pos;
-	if (pos.z < -64) pos.z = 128;
+	if (pos.z < -64) pos.z = world.;
 	var bPos = new Vector( Math.floor( pos.x ), Math.floor( pos.y ), Math.floor( pos.z ) );
 
-	if ( this.lastUpdate != null )
+	if (deltaTime > 0)
 	{
-		var delta = ( new Date().getTime() - this.lastUpdate ) / 1000;
-
 		// View
 		if ( this.dragging )
 		{
-			this.angles[0] += ( this.targetPitch - this.angles[0] ) * 30 * delta;
-			this.angles[1] += ( this.targetYaw - this.angles[1] ) * 30 * delta;
+			this.angles[0] += ( this.targetPitch - this.angles[0] ) * 30 * deltaTime;
+			this.angles[1] += ( this.targetYaw - this.angles[1] ) * 30 * deltaTime;
 			if ( this.angles[0] < -Math.PI/2 ) this.angles[0] = -Math.PI/2;
 			if ( this.angles[0] > Math.PI/2 ) this.angles[0] = Math.PI/2;
 		}
 
 		// Gravity
 		if (this.falling && velocity.z > -this.maxFallSpeed ){
-			velocity.z += this.gravity;
+			velocity.z += this.gravity
 			if (velocity.z <= -this.maxFallSpeed) velocity.z = -this.maxFallSpeed
 		}
 
@@ -252,6 +250,7 @@ Player.prototype.update = function()
 			moveDir.y += Math.sin(- this.angles[1]);
 		}
 
+		// Walk modifiers
 		if (this.keys[16]) {
 			this.maxSpeed = this.crouchSpeed;
 		} else if (this.keys["c"]) {
@@ -291,7 +290,7 @@ Player.prototype.update = function()
 		}
 		
 		// Resolve collision
-		this.pos = this.resolveCollision( pos, bPos, velocity.mul( delta ) );
+		this.pos = this.resolveCollision( pos, bPos, velocity.mul( deltaTime ) );
 		this.velocity = velocity;
 
 		if (this.keys["r"]) {
@@ -305,8 +304,6 @@ Player.prototype.update = function()
 			console.log(this.pos)
 		}
 	}
-
-	this.lastUpdate = new Date().getTime();
 }
 
 // resolveCollision( pos, bPos, velocity )

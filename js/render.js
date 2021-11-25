@@ -93,9 +93,10 @@ function Renderer( id )
 	playerTexture.image.onload = function()
 	{
 		gl.bindTexture( gl.TEXTURE_2D, playerTexture );
-		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, playerTexture.image );
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, playerTexture.image);
+		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST );
 	};
 	playerTexture.image.src = "media/player.png";
 	
@@ -106,8 +107,9 @@ function Renderer( id )
 	{
 		gl.bindTexture( gl.TEXTURE_2D, terrainTexture );
 		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, terrainTexture.image );
+		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST );
 	};
 	terrainTexture.image.src = "media/terrain.png";
 	
@@ -140,14 +142,15 @@ Renderer.prototype.draw = function()
 	var chunks = this.chunks;
 	
 	gl.bindTexture( gl.TEXTURE_2D, this.texTerrain );
-	
+
+
 	if ( chunks != null )
 	{
-		for ( var i = 0; i < chunks.length; i++ )
+		chunks.forEach((chunk, _, __) =>
 		{
-			if ( chunks[i].buffer != null ) 
-				this.drawBuffer( chunks[i].buffer );
-		}
+			if (chunk.buffer != null && this.isInFrustum(chunk))
+				this.drawBuffer( chunk.buffer );
+		})
 	}
 	
 	// Draw players
@@ -375,6 +378,7 @@ Renderer.prototype.setWorld = function( world, chunkSize )
 	this.world = world;
 	world.renderer = this;
 	this.chunkSize = chunkSize;
+	this.chunkRadius = 0.7071067 * chunkSize;
 	
 	// Create chunk list
 	var chunks = this.chunks = [];
@@ -414,6 +418,14 @@ Renderer.prototype.onBlockChanged = function( x, y, z )
 	}
 }
 
+Renderer.prototype.isInFrustum = function( chunk ) {
+	let minCos = this.fovCos;
+	let cx = (chunk.start[0] + chunk.end[0]) / 2 - this.camPos[0] + 2 * this.frustumDirOff.x,
+		cy = (chunk.start[1] + chunk.end[1]) / 2 - this.camPos[1] + 2 * this.frustumDirOff.y;
+	let sqrsum = cx*cx + cy*cy;
+	return (sqrsum <= this.max * this.max) && ((cx * this.frustumDir.x + cy * this.frustumDir.y) * invSqrt(sqrsum) > minCos);
+}
+
 // buildChunks( count )
 //
 // Build up to <count> dirty chunks.
@@ -439,7 +451,7 @@ Renderer.prototype.buildChunks = function( count )
 	{
 		var chunk = chunks[i];
 		
-		if ( chunk.dirty )
+		if ( chunk.dirty && this.isInFrustum(chunk))
 		{
 			var vertices = [];
 			
@@ -494,6 +506,7 @@ Renderer.prototype.setPerspective = function( fov, min, max )
 	var gl = this.gl;
 	
 	this.fov = fov;
+	this.fovCos = Math.cos(fov * 2);
 	this.min = min;
 	this.max = max;
 	
@@ -513,6 +526,10 @@ Renderer.prototype.setCamera = function( pos, ang )
 	var gl = this.gl;
 	
 	this.camPos = pos;
+	this.camAng = ang;
+
+	this.frustumDir = new Vector(Math.sin(this.camAng[1]), Math.cos(this.camAng[1]), 0);
+	this.frustumDirOff = this.frustumDir.mul(this.chunkRadius);
 	
 	mat4.identity( this.viewMatrix );
 	

@@ -94,6 +94,18 @@ function rectRectCollide( r1, r2 )
 	return false;
 }
 
+var buf = new ArrayBuffer(4),
+	f32 = new Float32Array(buf),
+	u32 = new Uint32Array(buf);
+
+function invSqrt( x ) {
+	var x2 = 0.5 * (f32[0] = x);
+	u32[0] = (0x5f3759df - (u32[0] >> 1));
+	var y = f32[0];
+	y = y * (1.5 - (x2 * y * y));   // 1st iteration
+	return y;
+}
+
 // Export to node.js
 if ( typeof( exports ) != "undefined" )
 {
